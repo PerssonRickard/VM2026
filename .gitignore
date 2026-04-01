@@ -1,0 +1,21 @@
+# Python/Django
+__pycache__/
+*.py[cod]
+*.sqlite3
+*.log
+FotbollsVM2026_venv/
+venv/
+env/
+*.env
+*.env.*
+
+# Node/React
+node_modules/
+npm-debug.log
+yarn-error.log
+frontend/build/
+
+# OS / Editors
+.DS_Store
+Thumbs.db
+.vscode/
