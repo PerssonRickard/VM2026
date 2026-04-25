@@ -356,13 +356,7 @@ export default function KeepieUppie() {
   const [finalScore, setFinalScore] = useState(0);
   const [playerName, setPlayerName] = useState("");
   const [submitted, setSubmitted] = useState(false);
-  const [highscores, setHighscores] = useState([
-    { name: "Ronaldo", score: 147 },
-    { name: "Messi", score: 132 },
-    { name: "Pelé", score: 98 },
-    { name: "Mbappé", score: 67 },
-    { name: "Neymar", score: 45 },
-  ]);
+  const [highscores, setHighscores] = useState([]);
 
   // ── API calls ──
   const fetchHighscores = async () => {
@@ -557,7 +551,7 @@ export default function KeepieUppie() {
         WebkitBackgroundClip: "text",
         WebkitTextFillColor: "transparent",
       }}>
-        VM 2026
+        TS VM 2026
       </h1>
 
       <div style={{
@@ -679,7 +673,7 @@ export default function KeepieUppie() {
           </h3>
 
           {highscores.length === 0 ? (
-            <p style={{ color: "#445", textAlign: "center", fontSize: "0.9rem" }}>No scores yet!</p>
+            <p style={{ color: "#445", textAlign: "center", fontSize: "0.9rem" }}>Loading scores</p>
           ) : (
             highscores.slice(0, 10).map((hs, i) => {
               const medal = i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}.`;
