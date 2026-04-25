@@ -443,7 +443,7 @@ export default function KeepieUppie() {
       gs.score++;
       gs.kickFlash = 20;
       b.vy = KICK_VY - Math.random() * 1.8;
-      b.vx += (dx / (dist + 0.01)) * 2.8;
+      b.vx -= (dx / (dist + 0.01)) * 4.0;
       b.vx = Math.max(-8, Math.min(8, b.vx));
       setDisplayScore(gs.score);
     }
