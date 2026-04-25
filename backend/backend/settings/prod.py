@@ -1,6 +1,6 @@
 from .base import *
 
-SECURE_SSL_REDIRECT = False  # TODO: set to true in production
+SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SECURE_BROWSER_XSS_FILTER = True
@@ -11,7 +11,7 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
-STATIC_URL = "/static/"
+STATIC_URL = "/django_static/"
 STATIC_ROOT = "/app/staticfiles"
 
 MEDIA_URL = "/media/"

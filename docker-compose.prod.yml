@@ -20,16 +20,18 @@ services:
       - DJANGO_SETTINGS_MODULE=backend.settings.prod
 
   nginx:
-    # image: nginx:latest
+    image: nginx:stable
     build:
       context: .
       dockerfile: frontend/Dockerfile.frontend
       target: prod
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - static_volume:/static:ro
       - media_volume:/app/media
+      - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       - backend
 

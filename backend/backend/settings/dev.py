@@ -1,3 +1,3 @@
 from .base import *
 
-STATIC_URL = "/static/"
+STATIC_URL = "/django_static/"

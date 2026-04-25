@@ -17,8 +17,16 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent  # TODO: not used atm
 
 SECRET_KEY = os.getenv("SECRET_KEY")
-CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
-CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",")
+CORS_ALLOWED_ORIGINS = [
+    o.strip()
+    for o in os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
+    if o.strip()
+]
+CSRF_TRUSTED_ORIGINS = [
+    o.strip()
+    for o in os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",")
+    if o.strip()
+]
 CORS_ALLOW_CREDENTIALS = True
 DEBUG = os.getenv("DEBUG", "False").lower() in ("true", "1", "yes")
 
@@ -27,7 +35,11 @@ DEBUG = os.getenv("DEBUG", "False").lower() in ("true", "1", "yes")
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 
-ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "").split(",")
+ALLOWED_HOSTS = [
+    o.strip()
+    for o in os.environ.get("DJANGO_ALLOWED_HOSTS", "").split(",")
+    if o.strip()
+]
 
 
 # Application definition

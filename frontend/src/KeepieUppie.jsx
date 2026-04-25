@@ -557,7 +557,7 @@ export default function KeepieUppie() {
         WebkitBackgroundClip: "text",
         WebkitTextFillColor: "transparent",
       }}>
-        KEEPIE UPPIE
+        VM 2026
       </h1>
 
       <div style={{
@@ -607,7 +607,7 @@ export default function KeepieUppie() {
                   fontFamily: "'Bebas Neue', Impact, sans-serif",
                   fontSize: "3.8rem",
                   color: "#ff4136",
-                  margin: "0 0 4px",
+                  margin: "10 0 4px",
                   letterSpacing: "5px",
                 }}>
                   GAME OVER
