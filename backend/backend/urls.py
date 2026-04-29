@@ -16,10 +16,11 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path, include
-from backend.views import HighscoreListView
+from django.urls import path
+from backend.views import HighscoreListView, MatchListView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/highscores/", HighscoreListView.as_view(), name="highscores"),
+    path("api/matches/", MatchListView.as_view(), name="matches"),
 ]

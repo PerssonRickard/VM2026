@@ -1,11 +1,13 @@
-# keepie/views.py
 from rest_framework import status
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from backend.models import Highscore
-from backend.serializers import HighscoreSerializer
+from backend.models import Highscore, Match
+from backend.serializers import (
+    HighscoreSerializer,
+    MatchSerializer,
+)
 
 TOP_N = 10  # how many scores to keep / return
 
@@ -43,3 +45,14 @@ class HighscoreListView(APIView):
 
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class MatchListView(APIView):
+    """GET /api/matches/ — all matches ordered by kickoff ascending"""
+
+    def get(self, request: Request) -> Response:
+        matches = Match.objects.select_related("home_team", "away_team").order_by(
+            "kickoff"
+        )
+        serializer = MatchSerializer(matches, many=True)
+        return Response(serializer.data)
