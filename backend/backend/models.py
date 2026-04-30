@@ -29,6 +29,7 @@ class Team(models.Model):
 class Match(models.Model):
     STAGE_CHOICES = [
         ("Group", "Group Stage"),
+        ("R32", "Round of 32"),
         ("R16", "Round of 16"),
         ("QF", "Quarter-Final"),
         ("SF", "Semi-Final"),
@@ -37,11 +38,15 @@ class Match(models.Model):
     ]
 
     home_team = models.ForeignKey(
-        Team, on_delete=models.PROTECT, related_name="home_matches"
+        Team, on_delete=models.PROTECT, related_name="home_matches",
+        null=True, blank=True
     )
     away_team = models.ForeignKey(
-        Team, on_delete=models.PROTECT, related_name="away_matches"
+        Team, on_delete=models.PROTECT, related_name="away_matches",
+        null=True, blank=True
     )
+    home_label = models.CharField(max_length=60, blank=True, default="")
+    away_label = models.CharField(max_length=60, blank=True, default="")
     kickoff = models.DateTimeField()
     stage = models.CharField(max_length=10, choices=STAGE_CHOICES, default="Group")
     group = models.CharField(
