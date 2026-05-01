@@ -16,6 +16,4 @@ RUN pip install -r requirements.txt
 # Copy project
 COPY backend/ .
 
-# TODO: Should this be done in dockerfile?
 FROM base AS prod
-RUN python manage.py collectstatic --noinput
