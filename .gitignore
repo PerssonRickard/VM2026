@@ -20,3 +20,5 @@ frontend/build/
 .DS_Store
 Thumbs.db
 .vscode/
+
+notes.txt
