@@ -53,7 +53,11 @@ export default function MainPage() {
   useEffect(() => {
     if (!loading && nextMatchRef.current && !scrolledRef.current) {
       scrolledRef.current = true;
-      nextMatchRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      const el = nextMatchRef.current;
+      const headerEl = document.querySelector(".site-header");
+      const headerHeight = headerEl ? headerEl.offsetHeight : 60;
+      const top = el.getBoundingClientRect().top + window.scrollY - headerHeight - 16;
+      window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
     }
   }, [loading]);
 
@@ -67,6 +71,9 @@ export default function MainPage() {
   }
 
   const days = groupMatchesByDay(matches);
+  const nextMatchDayKey = nextMatchId
+    ? days.find((d) => d.matches.some((m) => m.id === nextMatchId))?.dateKey
+    : null;
 
   return (
     <div className="main-layout">
@@ -77,13 +84,16 @@ export default function MainPage() {
           <p className="loading-msg">Inga matcher hittades.</p>
         ) : (
           days.map((day) => (
-            <section key={day.dateKey} className="day-section">
+            <section
+              key={day.dateKey}
+              className="day-section"
+              ref={day.dateKey === nextMatchDayKey ? nextMatchRef : null}
+            >
               <h2 className="day-header">{day.dateLabel}</h2>
               {day.matches.map((match) => (
                 <MatchCard
                   key={match.id}
                   match={match}
-                  innerRef={match.id === nextMatchId ? nextMatchRef : null}
                 />
               ))}
             </section>
