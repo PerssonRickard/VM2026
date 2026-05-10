@@ -23,3 +23,6 @@ Thumbs.db
 
 notes.txt
 *.md
+
+# Database backups
+backups/

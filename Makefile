@@ -12,3 +12,9 @@ down:
 
 full-down-dev:
 	docker compose -f docker-compose.yml -f docker-compose.dev.yml down -v
+
+backup:
+	bash scripts/backup.sh
+
+restore:
+	@if [ -z "$(FILE)" ]; then bash scripts/restore.sh; else bash scripts/restore.sh $(FILE); fi
