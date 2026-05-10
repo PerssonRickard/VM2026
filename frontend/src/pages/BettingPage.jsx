@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import api from "../api";
 import { useAuth } from "../AuthContext";
+import MatchCard from "../components/MatchCard";
 import "./BettingPage.css";
 
 const OUTCOME_LABELS = { H: "Hemma", D: "Oavgjort", A: "Borta" };
@@ -103,32 +104,10 @@ function BetForm({ match, existingBet, onBetPlaced }) {
 
 function MatchBetCard({ match, myBets, onBetPlaced }) {
   const existingBet = myBets.find((b) => b.match_id === match.id) || null;
-  const stageLabel = match.stage === "Group" ? `Grupp ${match.group}` : match.stage;
-  const code = (team) => team?.flag_code?.toLowerCase();
-
   return (
-    <div className="bet-match-card">
-      <div className="bet-match-header">
-        <span className="bet-match-stage">{stageLabel}</span>
-        <span className="bet-match-time">{formatKickoff(match.kickoff)}</span>
-      </div>
-      <div className="bet-match-teams">
-        <span className="bet-match-team">
-          {code(match.home_team) && (
-            <img src={`/flags/${code(match.home_team)}.png`} alt="" className="bet-flag" />
-          )}
-          {teamName(match, "home")}
-        </span>
-        <span className="bet-match-vs">vs</span>
-        <span className="bet-match-team">
-          {teamName(match, "away")}
-          {code(match.away_team) && (
-            <img src={`/flags/${code(match.away_team)}.png`} alt="" className="bet-flag" />
-          )}
-        </span>
-      </div>
+    <MatchCard match={match}>
       <BetForm match={match} existingBet={existingBet} onBetPlaced={onBetPlaced} />
-    </div>
+    </MatchCard>
   );
 }
 

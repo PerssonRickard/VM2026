@@ -35,7 +35,7 @@ function BetRow({ bet }) {
   );
 }
 
-export default function MatchCard({ match, innerRef }) {
+export default function MatchCard({ match, innerRef, children }) {
   const hasResult = match.home_score !== null && match.away_score !== null;
   const stageLabel = match.stage === "Group" ? `Grupp ${match.group}` : match.stage;
 
@@ -118,6 +118,10 @@ export default function MatchCard({ match, innerRef }) {
             <BetRow key={bet.id} bet={bet} />
           ))}
         </div>
+      )}
+
+      {children && (
+        <div className="match-card-extra">{children}</div>
       )}
     </div>
   );

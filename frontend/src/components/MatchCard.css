@@ -172,6 +172,13 @@
   to { opacity: 0.5; }
 }
 
+/* Extra slot (e.g. bet form on betting page) */
+.match-card-extra {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
 /* Bets section */
 .match-bets {
   margin-top: 14px;
