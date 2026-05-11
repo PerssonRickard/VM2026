@@ -8,6 +8,7 @@ from backend.views import (
     HighscoreListView,
     MatchListView,
     PlayerLeaderboardView,
+    TeamSquadView,
 )
 
 urlpatterns = [
@@ -16,6 +17,7 @@ urlpatterns = [
     path("api/matches/", MatchListView.as_view(), name="matches"),
     path("api/players/", PlayerLeaderboardView.as_view(), name="players"),
     path("api/bets/", BetListCreateView.as_view(), name="bets"),
+    path("api/teams/<int:team_id>/squad/", TeamSquadView.as_view(), name="team-squad"),
     path("api/auth/me/", CurrentUserView.as_view(), name="current-user"),
     path("api/token/", TokenObtainPairView.as_view(), name="token-obtain"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token-refresh"),

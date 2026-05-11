@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import CountdownTimer from "./CountdownTimer";
 import "./MatchCard.css";
 
@@ -63,7 +64,14 @@ export default function MatchCard({ match, innerRef, children }) {
       <div className="match-main">
         <div className="match-team match-team--home">
           <Flag code={homeCode} name={homeName} />
-          <span className="match-team-name">{homeName}</span>
+          <div className="match-team-stack">
+            <span className="match-team-name">{homeName}</span>
+            {match.home_team && (
+              <Link to={`/team/${match.home_team.id}`} className="match-team-squad-link">
+                Lag
+              </Link>
+            )}
+          </div>
         </div>
 
         <div className="match-center">
@@ -81,7 +89,14 @@ export default function MatchCard({ match, innerRef, children }) {
         </div>
 
         <div className="match-team match-team--away">
-          <span className="match-team-name">{awayName}</span>
+          <div className="match-team-stack match-team-stack--away">
+            <span className="match-team-name">{awayName}</span>
+            {match.away_team && (
+              <Link to={`/team/${match.away_team.id}`} className="match-team-squad-link">
+                Lag
+              </Link>
+            )}
+          </div>
           <Flag code={awayCode} name={awayName} />
         </div>
       </div>

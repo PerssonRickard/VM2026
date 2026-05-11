@@ -2,7 +2,7 @@
 from django.utils import timezone
 from rest_framework import serializers
 
-from backend.models import Bet, Highscore, Match, Player, Team
+from backend.models import FORMATIONS, Bet, Highscore, Match, Player, SquadSlot, Team
 
 
 class HighscoreSerializer(serializers.ModelSerializer):
@@ -27,6 +27,43 @@ class TeamSerializer(serializers.ModelSerializer):
     class Meta:
         model = Team
         fields = ["id", "name", "flag_code"]
+
+
+class SquadSlotSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SquadSlot
+        fields = ["order", "name"]
+
+
+class TeamSquadSerializer(serializers.ModelSerializer):
+    slots = SquadSlotSerializer(source="squad_slots", many=True, read_only=True)
+
+    class Meta:
+        model = Team
+        fields = ["id", "name", "flag_code", "formation", "slots"]
+
+
+class TeamSquadUpdateSerializer(serializers.Serializer):
+    formation = serializers.ChoiceField(choices=FORMATIONS)
+    slots = serializers.ListField(child=serializers.DictField(), min_length=11, max_length=11)
+
+    def validate_slots(self, value):
+        seen_orders = set()
+        cleaned = []
+        for slot in value:
+            order = slot.get("order")
+            name = slot.get("name", "")
+            if not isinstance(order, int) or order < 1 or order > 11:
+                raise serializers.ValidationError("Each slot must have order in 1..11.")
+            if order in seen_orders:
+                raise serializers.ValidationError(f"Duplicate slot order {order}.")
+            seen_orders.add(order)
+            if not isinstance(name, str):
+                raise serializers.ValidationError("Slot name must be a string.")
+            cleaned.append({"order": order, "name": name.strip()[:80]})
+        if seen_orders != set(range(1, 12)):
+            raise serializers.ValidationError("Slots must cover orders 1..11 exactly once.")
+        return cleaned
 
 
 class PlayerSerializer(serializers.ModelSerializer):

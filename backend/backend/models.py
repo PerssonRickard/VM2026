@@ -16,17 +16,38 @@ class Highscore(models.Model):
         return f"{self.name} — {self.score}"
 
 
+FORMATIONS = ["4-3-3", "4-4-2", "4-2-3-1", "3-5-2", "5-3-2"]
+
+
 class Team(models.Model):
     name = models.CharField(max_length=60)
     flag_code = models.CharField(
         max_length=10
     )  # ISO 3166-1 alpha-2 or subdivision, e.g. "BR", "GB-ENG"
+    formation = models.CharField(
+        max_length=10,
+        choices=[(f, f) for f in FORMATIONS],
+        default="4-3-3",
+    )
 
     class Meta:
         ordering = ["name"]
 
     def __str__(self):
         return self.name
+
+
+class SquadSlot(models.Model):
+    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="squad_slots")
+    order = models.PositiveSmallIntegerField()
+    name = models.CharField(max_length=80, blank=True, default="")
+
+    class Meta:
+        ordering = ["team", "order"]
+        unique_together = [("team", "order")]
+
+    def __str__(self):
+        return f"{self.team.name} #{self.order}: {self.name or '—'}"
 
 
 class Match(models.Model):
@@ -86,6 +107,7 @@ class Match(models.Model):
 class Player(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="player")
     points_balance = models.IntegerField(default=1000)
+    can_edit_squads = models.BooleanField(default=False)
 
     def __str__(self):
         return self.user.username

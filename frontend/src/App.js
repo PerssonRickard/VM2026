@@ -6,6 +6,7 @@ import BettingPage from "./pages/BettingPage";
 import GamePage from "./pages/GamePage";
 import LoginPage from "./pages/LoginPage";
 import MainPage from "./pages/MainPage";
+import TeamSquadPage from "./pages/TeamSquadPage";
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -29,6 +30,7 @@ function AppRoutes() {
           }
         />
         <Route path="/game" element={<GamePage />} />
+        <Route path="/team/:id" element={<TeamSquadPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>

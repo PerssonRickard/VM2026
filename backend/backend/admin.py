@@ -13,7 +13,8 @@ class HighscoreAdmin(admin.ModelAdmin):
 
 @admin.register(Team)
 class TeamAdmin(admin.ModelAdmin):
-    list_display = ("name", "flag_code")
+    list_display = ("name", "flag_code", "formation")
+    list_editable = ("formation",)
     search_fields = ("name",)
 
 
@@ -52,7 +53,8 @@ admin.site.register(User, CustomUserAdmin)
 
 @admin.register(Player)
 class PlayerAdmin(admin.ModelAdmin):
-    list_display = ("user", "points_balance")
+    list_display = ("user", "points_balance", "can_edit_squads")
+    list_editable = ("can_edit_squads",)
     search_fields = ("user__username",)
     ordering = ("-points_balance",)
 

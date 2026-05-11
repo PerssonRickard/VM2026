@@ -1,16 +1,21 @@
+from django.db import transaction
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from backend.models import Bet, Highscore, Match, Player
+from backend.models import Bet, Highscore, Match, Player, SquadSlot, Team
+from backend.permissions import CanEditSquads
 from backend.serializers import (
     BetCreateSerializer,
     BetSerializer,
     HighscoreSerializer,
     MatchSerializer,
     PlayerSerializer,
+    TeamSquadSerializer,
+    TeamSquadUpdateSerializer,
 )
 
 TOP_N = 10
@@ -122,12 +127,52 @@ class CurrentUserView(APIView):
         try:
             player = request.user.player
             points_balance = player.points_balance
+            can_edit_squads = player.can_edit_squads
         except Player.DoesNotExist:
             points_balance = None
+            can_edit_squads = False
         return Response(
             {
                 "id": request.user.id,
                 "username": request.user.username,
                 "points_balance": points_balance,
+                "can_edit_squads": can_edit_squads,
             }
         )
+
+
+class TeamSquadView(APIView):
+    def get_permissions(self):
+        if self.request.method == "PUT":
+            return [IsAuthenticated(), CanEditSquads()]
+        return []
+
+    def get(self, request: Request, team_id: int) -> Response:
+        team = get_object_or_404(
+            Team.objects.prefetch_related("squad_slots"), pk=team_id
+        )
+        return Response(TeamSquadSerializer(team).data)
+
+    def put(self, request: Request, team_id: int) -> Response:
+        team = get_object_or_404(Team, pk=team_id)
+        serializer = TeamSquadUpdateSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        data = serializer.validated_data
+        with transaction.atomic():
+            team.formation = data["formation"]
+            team.save(update_fields=["formation"])
+            existing = {s.order: s for s in team.squad_slots.all()}
+            for slot_data in data["slots"]:
+                slot = existing.get(slot_data["order"])
+                if slot is None:
+                    SquadSlot.objects.create(
+                        team=team, order=slot_data["order"], name=slot_data["name"]
+                    )
+                else:
+                    slot.name = slot_data["name"]
+                    slot.save(update_fields=["name"])
+
+        team.refresh_from_db()
+        return Response(TeamSquadSerializer(team).data)
