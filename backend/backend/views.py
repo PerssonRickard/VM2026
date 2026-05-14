@@ -162,7 +162,9 @@ class TeamSquadView(APIView):
         data = serializer.validated_data
         with transaction.atomic():
             team.formation = data["formation"]
-            team.save(update_fields=["formation"])
+            team.manager = data.get("manager", "")
+            team.description = data.get("description", "")
+            team.save(update_fields=["formation", "manager", "description"])
             existing = {s.order: s for s in team.squad_slots.all()}
             for slot_data in data["slots"]:
                 slot = existing.get(slot_data["order"])

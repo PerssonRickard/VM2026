@@ -40,12 +40,20 @@ class TeamSquadSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Team
-        fields = ["id", "name", "flag_code", "formation", "slots"]
+        fields = ["id", "name", "flag_code", "formation", "manager", "description", "slots"]
 
 
 class TeamSquadUpdateSerializer(serializers.Serializer):
     formation = serializers.ChoiceField(choices=FORMATIONS)
+    manager = serializers.CharField(allow_blank=True, max_length=80, required=False, default="")
+    description = serializers.CharField(allow_blank=True, required=False, default="")
     slots = serializers.ListField(child=serializers.DictField(), min_length=11, max_length=11)
+
+    def validate_manager(self, value):
+        return value.strip()[:80]
+
+    def validate_description(self, value):
+        return value.strip()
 
     def validate_slots(self, value):
         seen_orders = set()

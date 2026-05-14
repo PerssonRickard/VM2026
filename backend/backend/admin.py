@@ -13,9 +13,9 @@ class HighscoreAdmin(admin.ModelAdmin):
 
 @admin.register(Team)
 class TeamAdmin(admin.ModelAdmin):
-    list_display = ("name", "flag_code", "formation")
-    list_editable = ("formation",)
-    search_fields = ("name",)
+    list_display = ("name", "flag_code", "formation", "manager")
+    list_editable = ("formation", "manager")
+    search_fields = ("name", "manager")
 
 
 @admin.register(Match)

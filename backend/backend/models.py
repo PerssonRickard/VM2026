@@ -29,6 +29,8 @@ class Team(models.Model):
         choices=[(f, f) for f in FORMATIONS],
         default="4-3-3",
     )
+    manager = models.CharField(max_length=80, blank=True, default="")
+    description = models.TextField(blank=True, default="")
 
     class Meta:
         ordering = ["name"]
