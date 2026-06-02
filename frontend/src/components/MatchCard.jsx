@@ -28,7 +28,6 @@ function BetRow({ bet }) {
     <div className={`bet-row ${won ? "bet-row--won" : ""} ${lost ? "bet-row--lost" : ""}`}>
       <span className="bet-player">{bet.player_username}</span>
       <span className="bet-pick">{outcomeLabel(bet.outcome)}</span>
-      <span className="bet-amount">{bet.amount} p</span>
       {won && <span className="bet-result bet-result--won">+{bet.payout} p</span>}
       {lost && <span className="bet-result bet-result--lost">–</span>}
       {!bet.is_settled && <span className="bet-result bet-result--pending">•</span>}
@@ -101,24 +100,27 @@ export default function MatchCard({ match, innerRef, children }) {
         </div>
       </div>
 
-      {(match.odds_home || match.odds_draw || match.odds_away) && (
+      {!children && (match.odds_home || match.odds_draw || match.odds_away) && (
         <div className="match-odds">
+          {match.odds_locked && (
+            <span className="odds-lock-badge">Odds låsta</span>
+          )}
           {match.odds_home && (
             <div className="odds-chip">
               <span className="odds-label">1</span>
-              <span className="odds-value">{match.odds_home}</span>
+              <span className="odds-points">{Math.round(parseFloat(match.odds_home) * 100)} p</span>
             </div>
           )}
           {match.odds_draw && (
             <div className="odds-chip">
               <span className="odds-label">X</span>
-              <span className="odds-value">{match.odds_draw}</span>
+              <span className="odds-points">{Math.round(parseFloat(match.odds_draw) * 100)} p</span>
             </div>
           )}
           {match.odds_away && (
             <div className="odds-chip">
               <span className="odds-label">2</span>
-              <span className="odds-value">{match.odds_away}</span>
+              <span className="odds-points">{Math.round(parseFloat(match.odds_away) * 100)} p</span>
             </div>
           )}
         </div>

@@ -108,7 +108,7 @@ class Match(models.Model):
 
 class Player(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="player")
-    points_balance = models.IntegerField(default=1000)
+    points_balance = models.IntegerField(default=0)
     can_edit_squads = models.BooleanField(default=False)
 
     def __str__(self):
@@ -121,8 +121,9 @@ class Bet(models.Model):
     player = models.ForeignKey(Player, on_delete=models.CASCADE, related_name="bets")
     match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name="bets")
     outcome = models.CharField(max_length=1, choices=OUTCOME_CHOICES)
-    amount = models.PositiveIntegerField()
-    odds_at_bet = models.DecimalField(max_digits=5, decimal_places=2)
+    odds_at_bet = models.DecimalField(
+        max_digits=5, decimal_places=2
+    )  # TODO: no longer relevant?
     is_settled = models.BooleanField(default=False)
     payout = models.IntegerField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -131,7 +132,7 @@ class Bet(models.Model):
         unique_together = [("player", "match")]
 
     def __str__(self):
-        return f"{self.player} → {self.match} ({self.outcome}, {self.amount}p)"
+        return f"{self.player} → {self.match} ({self.outcome})"
 
 
 def settle_match(match):
@@ -139,11 +140,11 @@ def settle_match(match):
 
     Safe to call multiple times — reverses any previous settlement before
     recalculating, so admin corrections to scores are handled correctly.
+    Correct predictions earn round(odds_at_bet * 100) points; wrong ones earn nothing.
     """
     if match.home_score is None or match.away_score is None:
         return
 
-    # TODO: can this handle overtime + penalties?
     if match.home_score > match.away_score:
         winning_outcome = "H"
     elif match.home_score == match.away_score:
@@ -158,9 +159,6 @@ def settle_match(match):
         if bet.is_settled:
             if bet.payout and bet.payout > 0:
                 bet.player.points_balance -= bet.payout
-            else:
-                # Loser had their stake deducted at bet time; refund it.
-                bet.player.points_balance += bet.amount
             bet.player.save(update_fields=["points_balance"])
             bet.is_settled = False
             bet.payout = None
@@ -169,7 +167,7 @@ def settle_match(match):
     # Settle with the (possibly new) result.
     for bet in bets:
         if bet.outcome == winning_outcome:
-            bet.payout = round(bet.amount * float(bet.odds_at_bet))
+            bet.payout = round(float(bet.odds_at_bet) * 100)
             bet.player.points_balance += bet.payout
         else:
             bet.payout = 0

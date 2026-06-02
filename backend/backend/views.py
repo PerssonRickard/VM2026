@@ -100,24 +100,23 @@ class BetListCreateView(APIView):
         player = data["player"]
         match = data["match"]
 
-        # TODO: does not allow to bet change
-        if Bet.objects.filter(player=player, match=match).exists():
-            return Response(
-                {"detail": "You have already placed a bet on this match."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        player.points_balance -= data["amount"]
-        player.save(update_fields=["points_balance"])
-
-        bet = Bet.objects.create(
-            player=player,
-            match=match,
-            outcome=data["outcome"],
-            amount=data["amount"],
-            odds_at_bet=data["odds_at_bet"],
-        )
-        return Response(BetSerializer(bet).data, status=status.HTTP_201_CREATED)
+        with transaction.atomic():
+            try:
+                bet = Bet.objects.select_for_update().get(player=player, match=match)
+                bet.outcome = data["outcome"]
+                bet.odds_at_bet = data["odds_at_bet"]
+                bet.is_settled = False
+                bet.payout = None
+                bet.save(update_fields=["outcome", "odds_at_bet", "is_settled", "payout"])
+                return Response(BetSerializer(bet).data, status=status.HTTP_200_OK)
+            except Bet.DoesNotExist:
+                bet = Bet.objects.create(
+                    player=player,
+                    match=match,
+                    outcome=data["outcome"],
+                    odds_at_bet=data["odds_at_bet"],
+                )
+                return Response(BetSerializer(bet).data, status=status.HTTP_201_CREATED)
 
 
 class CurrentUserView(APIView):

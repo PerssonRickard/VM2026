@@ -1,4 +1,6 @@
 
+from datetime import timedelta
+
 from django.utils import timezone
 from rest_framework import serializers
 
@@ -93,7 +95,6 @@ class PublicBetSerializer(serializers.ModelSerializer):
             "id",
             "player_username",
             "outcome",
-            "amount",
             "odds_at_bet",
             "is_settled",
             "payout",
@@ -113,7 +114,6 @@ class BetSerializer(serializers.ModelSerializer):
             "player_username",
             "match_id",
             "outcome",
-            "amount",
             "odds_at_bet",
             "is_settled",
             "payout",
@@ -124,7 +124,6 @@ class BetSerializer(serializers.ModelSerializer):
 class BetCreateSerializer(serializers.Serializer):
     match_id = serializers.IntegerField()
     outcome = serializers.ChoiceField(choices=["H", "D", "A"])
-    amount = serializers.IntegerField(min_value=1000)
 
     def validate(self, data):
         now = timezone.now()
@@ -146,16 +145,13 @@ class BetCreateSerializer(serializers.Serializer):
                 {"outcome": "No odds available for this outcome."}
             )
 
-        player = self.context["request"].user.player
-        if data["amount"] > player.points_balance:
-            raise serializers.ValidationError(
-                {"amount": "Insufficient points balance."}
-            )
-
         data["match"] = match
         data["odds_at_bet"] = odds_map[outcome]
-        data["player"] = player
+        data["player"] = self.context["request"].user.player
         return data
+
+
+ODDS_LOCK_HOURS = 24
 
 
 def _is_betting_closed(match):
@@ -163,11 +159,16 @@ def _is_betting_closed(match):
     return match.is_locked or now >= match.kickoff
 
 
+def _odds_lock_time(match):
+    return match.kickoff - timedelta(hours=ODDS_LOCK_HOURS)
+
+
 class MatchSerializer(serializers.ModelSerializer):
     home_team = TeamSerializer(read_only=True)
     away_team = TeamSerializer(read_only=True)
-    locked_at = serializers.SerializerMethodField()
     betting_closed = serializers.SerializerMethodField()
+    odds_locked = serializers.SerializerMethodField()
+    odds_lock_time = serializers.SerializerMethodField()
     bets = serializers.SerializerMethodField()
 
     class Meta:
@@ -187,16 +188,20 @@ class MatchSerializer(serializers.ModelSerializer):
             "odds_draw",
             "odds_away",
             "is_locked",
-            "locked_at",
             "betting_closed",
+            "odds_locked",
+            "odds_lock_time",
             "bets",
         ]
 
-    def get_locked_at(self, obj):
-        return obj.kickoff.isoformat()
-
     def get_betting_closed(self, obj):
         return _is_betting_closed(obj)
+
+    def get_odds_locked(self, obj):
+        return timezone.now() >= _odds_lock_time(obj)
+
+    def get_odds_lock_time(self, obj):
+        return _odds_lock_time(obj).isoformat()
 
     def get_bets(self, obj):
         if not _is_betting_closed(obj):

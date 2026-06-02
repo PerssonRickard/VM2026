@@ -1,3 +1,5 @@
+import random
+
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
@@ -20,6 +22,21 @@ class TeamAdmin(admin.ModelAdmin):
 
 @admin.register(Match)
 class MatchAdmin(admin.ModelAdmin):
+    actions = ["randomize_odds"]
+
+    def randomize_odds(self, request, queryset):
+        for match in queryset:
+            p = [random.random() for _ in range(3)]
+            total = sum(p)
+            # Normalize with 5% bookmaker margin so odds are slightly above fair value
+            p = [x / total * 0.95 for x in p]
+            match.odds_home = round(1 / p[0], 2)
+            match.odds_draw = round(1 / p[1], 2)
+            match.odds_away = round(1 / p[2], 2)
+            match.save()
+        self.message_user(request, f"Randomized odds for {queryset.count()} match(es).")
+    randomize_odds.short_description = "Apply random odds to selected matches"
+
     list_display = (
         "__str__",
         "stage",
@@ -61,7 +78,7 @@ class PlayerAdmin(admin.ModelAdmin):
 
 @admin.register(Bet)
 class BetAdmin(admin.ModelAdmin):
-    list_display = ("player", "match", "outcome", "amount", "odds_at_bet", "is_settled", "payout")
+    list_display = ("player", "match", "outcome", "odds_at_bet", "is_settled", "payout")
     list_filter = ("is_settled", "outcome")
     search_fields = ("player__user__username",)
     ordering = ("match__kickoff",)

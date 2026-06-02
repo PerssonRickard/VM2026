@@ -28,19 +28,27 @@
   color: #e2b04a;
 }
 
-.betting-section {
-  margin-bottom: 36px;
+.day-section {
+  margin-bottom: 32px;
 }
 
-.betting-section-title {
-  font-size: 0.85rem;
+.day-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.72rem;
   font-weight: 700;
-  color: #888;
+  color: #4a86c8;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  padding-bottom: 10px;
-  border-bottom: 2px solid #2a2a4a;
-  margin-bottom: 14px;
+  letter-spacing: 0.12em;
+  margin-bottom: 12px;
+}
+
+.day-header::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .betting-empty {
@@ -52,7 +60,7 @@
 .bet-form {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .bet-form-options {
@@ -83,7 +91,12 @@
   background: rgba(226, 176, 74, 0.1);
 }
 
-.bet-option:hover:not(.bet-option--selected) {
+.bet-option--disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.bet-option:hover:not(.bet-option--selected):not(.bet-option--disabled) {
   border-color: #444;
   background: rgba(255, 255, 255, 0.04);
 }
@@ -100,56 +113,36 @@
   color: #e2b04a;
 }
 
-.bet-form-bottom {
+.bet-form-status {
   display: flex;
-  gap: 8px;
+  justify-content: center;
+  min-height: 1.2em;
 }
 
-.bet-amount-input {
-  flex: 1;
-  padding: 9px 12px;
-  background: #0d1117;
-  border: 1px solid #2a2a4a;
-  border-radius: 5px;
-  color: #fff;
-  font-size: 0.95rem;
-  outline: none;
-  transition: border-color 0.15s;
+.bet-odds-note {
+  font-size: 0.72rem;
+  color: #555;
+  text-align: center;
 }
 
-.bet-amount-input:focus {
-  border-color: #e2b04a;
+.bet-status-saving {
+  font-size: 0.72rem;
+  color: #888;
+  font-style: italic;
 }
 
-.bet-submit-btn {
-  padding: 9px 20px;
-  background: #e2b04a;
-  color: #1a1a2e;
-  border: none;
-  border-radius: 5px;
-  font-weight: 700;
-  font-size: 0.95rem;
-  cursor: pointer;
-  transition: background 0.15s;
-  white-space: nowrap;
-}
-
-.bet-submit-btn:hover:not(:disabled) {
-  background: #f0c060;
-}
-
-.bet-submit-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+.bet-status-saved {
+  font-size: 0.72rem;
+  color: #4caf7d;
+  font-weight: 600;
 }
 
 .bet-error {
+  font-size: 0.78rem;
   color: #e06060;
-  font-size: 0.84rem;
-  margin: 0;
 }
 
-/* Existing bet display */
+/* Existing bet display (after kickoff) */
 .existing-bet {
   display: flex;
   align-items: center;
@@ -192,59 +185,6 @@
 .existing-bet-status--lost {
   color: #e06060;
   font-style: normal;
-}
-
-/* My bets table */
-.my-bets-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.88rem;
-}
-
-.my-bets-table th {
-  text-align: left;
-  color: #888;
-  font-weight: 500;
-  padding: 6px 10px;
-  border-bottom: 1px solid #2a2a4a;
-}
-
-.my-bets-table td {
-  padding: 10px 10px;
-  border-bottom: 1px solid #1e1e3a;
-  color: #ccc;
-  vertical-align: top;
-}
-
-.my-bets-table td small {
-  color: #666;
-  font-size: 0.78rem;
-}
-
-.my-bets-table tr:last-child td {
-  border-bottom: none;
-}
-
-.row--won td {
-  background: rgba(76, 175, 125, 0.05);
-}
-
-.row--lost td {
-  background: rgba(224, 96, 96, 0.04);
-}
-
-.status-pending {
-  color: #666;
-  font-style: italic;
-}
-
-.status-won {
-  color: #4caf7d;
-  font-weight: 700;
-}
-
-.status-lost {
-  color: #e06060;
 }
 
 .loading-msg {

@@ -157,9 +157,22 @@
 /* Odds */
 .match-odds {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
   margin-top: 14px;
   justify-content: center;
+  align-items: center;
+}
+
+.odds-lock-badge {
+  width: 100%;
+  text-align: center;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #4caf7d;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 2px;
 }
 
 .odds-chip {
@@ -182,7 +195,7 @@
   letter-spacing: 0.08em;
 }
 
-.odds-value {
+.odds-points {
   font-size: 0.95rem;
   font-weight: 700;
   color: #e2b04a;
@@ -230,7 +243,7 @@
 
 .bet-row {
   display: grid;
-  grid-template-columns: 100px 1fr auto auto;
+  grid-template-columns: 100px 1fr auto;
   align-items: center;
   gap: 8px;
   padding: 5px 0;
@@ -254,10 +267,6 @@
   color: #666;
 }
 
-.bet-amount {
-  color: #555;
-  font-size: 0.75rem;
-}
 
 .bet-result {
   font-weight: 700;

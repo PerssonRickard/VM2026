@@ -5,38 +5,24 @@ import MatchCard from "../components/MatchCard";
 import "./BettingPage.css";
 
 const OUTCOME_LABELS = { H: "Hemma", D: "Oavgjort", A: "Borta" };
-const SWEDISH_MONTHS = [
-  "jan", "feb", "mar", "apr", "maj", "jun",
-  "jul", "aug", "sep", "okt", "nov", "dec",
-];
-
-function formatKickoff(iso) {
-  const d = new Date(iso);
-  return `${d.getDate()} ${SWEDISH_MONTHS[d.getMonth()]} ${d.toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" })}`;
-}
-
-function teamName(match, side) {
-  const team = side === "home" ? match.home_team : match.away_team;
-  const label = side === "home" ? match.home_label : match.away_label;
-  return team?.name || label || "TBD";
-}
 
 function BetForm({ match, existingBet, onBetPlaced }) {
-  const [outcome, setOutcome] = useState("");
-  const [amount, setAmount] = useState("");
+  const [outcome, setOutcome] = useState(existingBet?.outcome || "");
+  const [saving, setSaving] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
   const [error, setError] = useState("");
-  const [submitting, setSubmitting] = useState(false);
 
-  if (existingBet) {
+  if (match.betting_closed) {
+    if (!existingBet) return null;
     const settled = existingBet.is_settled;
     const won = settled && existingBet.payout > 0;
     return (
       <div className={`existing-bet ${won ? "existing-bet--won" : ""} ${settled && !won ? "existing-bet--lost" : ""}`}>
-        <span className="existing-bet-label">Din insats:</span>
-        <span>{OUTCOME_LABELS[existingBet.outcome]} · {existingBet.amount} p</span>
+        <span className="existing-bet-label">Ditt tips:</span>
+        <span>{OUTCOME_LABELS[existingBet.outcome]} · {existingBet.odds_at_bet}x</span>
         {!settled && <span className="existing-bet-status">Väntar på resultat</span>}
         {won && <span className="existing-bet-status existing-bet-status--won">+{existingBet.payout} p</span>}
-        {settled && !won && <span className="existing-bet-status existing-bet-status--lost">Förlorade</span>}
+        {settled && !won && <span className="existing-bet-status existing-bet-status--lost">Fel tips</span>}
       </div>
     );
   }
@@ -44,61 +30,65 @@ function BetForm({ match, existingBet, onBetPlaced }) {
   const odds = { H: match.odds_home, D: match.odds_draw, A: match.odds_away };
   const options = Object.entries(odds).filter(([, v]) => v !== null);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSelect = async (key) => {
+    if (saving || key === outcome) return;
+    const prev = outcome;
+    setOutcome(key);
+    setSaving(true);
+    setJustSaved(false);
     setError("");
-    if (!outcome) { setError("Välj ett utfall."); return; }
-    const amt = parseInt(amount, 10);
-    if (!amt || amt < 1) { setError("Ange ett belopp på minst 1000 poäng."); return; }
-    setSubmitting(true);
     try {
-      await api.post("/bets/", { match_id: match.id, outcome, amount: amt });
+      await api.post("/bets/", { match_id: match.id, outcome: key });
+      setJustSaved(true);
       onBetPlaced();
+      setTimeout(() => setJustSaved(false), 2000);
     } catch (err) {
+      setOutcome(prev);
       const detail = err.response?.data;
-      if (typeof detail === "object") {
-        const msgs = Object.values(detail).flat().join(" ");
-        setError(msgs || "Kunde inte lägga spelet.");
-      } else {
-        setError("Kunde inte lägga spelet.");
-      }
+      setError(
+        typeof detail === "object"
+          ? Object.values(detail).flat().join(" ") || "Kunde inte spara."
+          : "Kunde inte spara."
+      );
     } finally {
-      setSubmitting(false);
+      setSaving(false);
     }
   };
 
   return (
-    <form className="bet-form" onSubmit={handleSubmit}>
+    <div className="bet-form">
       <div className="bet-form-options">
         {options.map(([key, odd]) => (
-          <label key={key} className={`bet-option ${outcome === key ? "bet-option--selected" : ""}`}>
+          <label
+            key={key}
+            className={`bet-option ${outcome === key ? "bet-option--selected" : ""} ${saving ? "bet-option--disabled" : ""}`}
+          >
             <input
               type="radio"
               name={`outcome-${match.id}`}
               value={key}
               checked={outcome === key}
-              onChange={() => setOutcome(key)}
+              onChange={() => handleSelect(key)}
+              disabled={saving}
             />
             <span className="bet-option-label">{OUTCOME_LABELS[key]}</span>
-            <span className="bet-option-odds">{odd}</span>
+            <span className="bet-option-odds">{Math.round(parseFloat(odd) * 100)} p</span>
           </label>
         ))}
       </div>
-      <div className="bet-form-bottom">
-        <input
-          className="bet-amount-input"
-          type="number"
-          min="1000"
-          placeholder="Poäng"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-        />
-        <button className="bet-submit-btn" type="submit" disabled={submitting}>
-          {submitting ? "Skickar..." : "Spela"}
-        </button>
+      <div className="bet-form-status">
+        {saving && <span className="bet-status-saving">Sparar...</span>}
+        {!saving && justSaved && <span className="bet-status-saved">Sparat</span>}
+        {!saving && !justSaved && (
+          <span className="bet-odds-note">
+            {match.odds_locked
+  ? "Odds låsta · dessa avgör vinsten"
+  : "Uppdateras löpande · låses 24h före avspark · låsta odds avgör vinsten"}
+          </span>
+        )}
+        {error && <span className="bet-error">{error}</span>}
       </div>
-      {error && <p className="bet-error">{error}</p>}
-    </form>
+    </div>
   );
 }
 
@@ -109,6 +99,36 @@ function MatchBetCard({ match, myBets, onBetPlaced }) {
       <BetForm match={match} existingBet={existingBet} onBetPlaced={onBetPlaced} />
     </MatchCard>
   );
+}
+
+const SWEDISH_DAYS = ["Söndag", "Måndag", "Tisdag", "Onsdag", "Torsdag", "Fredag", "Lördag"];
+const SWEDISH_MONTHS = [
+  "januari", "februari", "mars", "april", "maj", "juni",
+  "juli", "augusti", "september", "oktober", "november", "december",
+];
+
+function formatDayHeader(dateStr) {
+  const d = new Date(dateStr);
+  return `${SWEDISH_DAYS[d.getDay()]} ${d.getDate()} ${SWEDISH_MONTHS[d.getMonth()]}`;
+}
+
+function localDateKey(isoString) {
+  const d = new Date(isoString);
+  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+}
+
+function groupMatchesByDay(matches) {
+  const groups = [];
+  const seen = new Map();
+  for (const match of matches) {
+    const key = localDateKey(match.kickoff);
+    if (!seen.has(key)) {
+      seen.set(key, groups.length);
+      groups.push({ dateKey: key, dateLabel: formatDayHeader(match.kickoff), matches: [] });
+    }
+    groups[seen.get(key)].matches.push(match);
+  }
+  return groups;
 }
 
 export default function BettingPage() {
@@ -128,11 +148,10 @@ export default function BettingPage() {
     reload().finally(() => setLoading(false));
   }, [reload]);
 
-  const openMatches = matches.filter((m) => !m.betting_closed && (m.odds_home || m.odds_draw || m.odds_away));
-  const myBetsWithDetails = myBets.map((bet) => {
-    const match = matches.find((m) => m.id === bet.match_id);
-    return { ...bet, match };
-  }).filter((b) => b.match);
+  const upcomingMatches = matches.filter(
+    (m) => !m.betting_closed && (m.odds_home || m.odds_draw || m.odds_away)
+  );
+  const dayGroups = groupMatchesByDay(upcomingMatches);
 
   if (loading) {
     return <div className="betting-page"><p className="loading-msg">Laddar...</p></div>;
@@ -141,67 +160,27 @@ export default function BettingPage() {
   return (
     <div className="betting-page">
       <div className="betting-balance">
-        <span className="balance-label">Ditt saldo</span>
+        <span className="balance-label">Dina poäng</span>
         <span className="balance-value">{user?.points_balance ?? "–"} p</span>
       </div>
 
-      <section className="betting-section">
-        <h2 className="betting-section-title">Kommande matcher</h2>
-        {openMatches.length === 0 ? (
-          <p className="betting-empty">Inga öppna spel just nu.</p>
-        ) : (
-          openMatches.map((match) => (
-            <MatchBetCard
-              key={match.id}
-              match={match}
-              myBets={myBets}
-              onBetPlaced={reload}
-            />
-          ))
-        )}
-      </section>
-
-      <section className="betting-section">
-        <h2 className="betting-section-title">Mina spel</h2>
-        {myBetsWithDetails.length === 0 ? (
-          <p className="betting-empty">Du har inga spel ännu.</p>
-        ) : (
-          <table className="my-bets-table">
-            <thead>
-              <tr>
-                <th>Match</th>
-                <th>Utfall</th>
-                <th>Insats</th>
-                <th>Odds</th>
-                <th>Resultat</th>
-              </tr>
-            </thead>
-            <tbody>
-              {myBetsWithDetails.map((bet) => {
-                const won = bet.is_settled && bet.payout > 0;
-                const lost = bet.is_settled && bet.payout === 0;
-                return (
-                  <tr key={bet.id} className={won ? "row--won" : lost ? "row--lost" : ""}>
-                    <td>
-                      {teamName(bet.match, "home")} vs {teamName(bet.match, "away")}
-                      <br />
-                      <small>{formatKickoff(bet.match.kickoff)}</small>
-                    </td>
-                    <td>{OUTCOME_LABELS[bet.outcome]}</td>
-                    <td>{bet.amount} p</td>
-                    <td>{bet.odds_at_bet}</td>
-                    <td>
-                      {!bet.is_settled && <span className="status-pending">Väntar</span>}
-                      {won && <span className="status-won">+{bet.payout} p</span>}
-                      {lost && <span className="status-lost">Förlorade</span>}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        )}
-      </section>
+      {upcomingMatches.length === 0 ? (
+        <p className="betting-empty">Inga öppna spel just nu.</p>
+      ) : (
+        dayGroups.map((day) => (
+          <section className="day-section" key={day.dateKey}>
+            <h2 className="day-header">{day.dateLabel}</h2>
+            {day.matches.map((match) => (
+              <MatchBetCard
+                key={match.id}
+                match={match}
+                myBets={myBets}
+                onBetPlaced={reload}
+              />
+            ))}
+          </section>
+        ))
+      )}
     </div>
   );
 }
