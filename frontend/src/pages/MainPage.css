@@ -55,5 +55,6 @@
   .main-sidebar {
     width: 100%;
     flex: none;
+    order: -1;
   }
 }
