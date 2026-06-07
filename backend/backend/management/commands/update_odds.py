@@ -1,7 +1,6 @@
-from datetime import datetime
-
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from django.utils import timezone
 
 from odds.odds_api import get_odds
 from backend.models import Match
@@ -11,7 +10,7 @@ class Command(BaseCommand):
     help = "Fetch latest odds from the odds API and update unlocked matches."
 
     def _ts(self):
-        return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        return timezone.now().strftime("%Y-%m-%d %H:%M:%S UTC")
 
     def handle(self, *args, **options):
         try:
