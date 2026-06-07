@@ -95,7 +95,6 @@ class PublicBetSerializer(serializers.ModelSerializer):
             "id",
             "player_username",
             "outcome",
-            "odds_at_bet",
             "is_settled",
             "payout",
         ]
@@ -114,7 +113,6 @@ class BetSerializer(serializers.ModelSerializer):
             "player_username",
             "match_id",
             "outcome",
-            "odds_at_bet",
             "is_settled",
             "payout",
             "created_at",
@@ -146,7 +144,6 @@ class BetCreateSerializer(serializers.Serializer):
             )
 
         data["match"] = match
-        data["odds_at_bet"] = odds_map[outcome]
         data["player"] = self.context["request"].user.player
         return data
 

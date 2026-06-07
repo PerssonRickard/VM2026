@@ -78,7 +78,7 @@ class PlayerAdmin(admin.ModelAdmin):
 
 @admin.register(Bet)
 class BetAdmin(admin.ModelAdmin):
-    list_display = ("player", "match", "outcome", "odds_at_bet", "is_settled", "payout")
+    list_display = ("player", "match", "outcome", "is_settled", "payout")
     list_filter = ("is_settled", "outcome")
     search_fields = ("player__user__username",)
     ordering = ("match__kickoff",)

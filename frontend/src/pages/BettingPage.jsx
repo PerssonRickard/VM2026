@@ -12,6 +12,8 @@ function BetForm({ match, existingBet, onBetPlaced }) {
   const [justSaved, setJustSaved] = useState(false);
   const [error, setError] = useState("");
 
+  const odds = { H: match.odds_home, D: match.odds_draw, A: match.odds_away };
+
   if (match.betting_closed) {
     if (!existingBet) return null;
     const settled = existingBet.is_settled;
@@ -19,7 +21,7 @@ function BetForm({ match, existingBet, onBetPlaced }) {
     return (
       <div className={`existing-bet ${won ? "existing-bet--won" : ""} ${settled && !won ? "existing-bet--lost" : ""}`}>
         <span className="existing-bet-label">Ditt tips:</span>
-        <span>{OUTCOME_LABELS[existingBet.outcome]} · {existingBet.odds_at_bet}x</span>
+        <span>{OUTCOME_LABELS[existingBet.outcome]} · {odds[existingBet.outcome]}x</span>
         {!settled && <span className="existing-bet-status">Väntar på resultat</span>}
         {won && <span className="existing-bet-status existing-bet-status--won">+{existingBet.payout} p</span>}
         {settled && !won && <span className="existing-bet-status existing-bet-status--lost">Fel tips</span>}
@@ -27,7 +29,6 @@ function BetForm({ match, existingBet, onBetPlaced }) {
     );
   }
 
-  const odds = { H: match.odds_home, D: match.odds_draw, A: match.odds_away };
   const options = Object.entries(odds).filter(([, v]) => v !== null);
 
   const handleSelect = async (key) => {

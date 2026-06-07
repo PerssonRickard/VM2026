@@ -104,17 +104,15 @@ class BetListCreateView(APIView):
             try:
                 bet = Bet.objects.select_for_update().get(player=player, match=match)
                 bet.outcome = data["outcome"]
-                bet.odds_at_bet = data["odds_at_bet"]
                 bet.is_settled = False
                 bet.payout = None
-                bet.save(update_fields=["outcome", "odds_at_bet", "is_settled", "payout"])
+                bet.save(update_fields=["outcome", "is_settled", "payout"])
                 return Response(BetSerializer(bet).data, status=status.HTTP_200_OK)
             except Bet.DoesNotExist:
                 bet = Bet.objects.create(
                     player=player,
                     match=match,
                     outcome=data["outcome"],
-                    odds_at_bet=data["odds_at_bet"],
                 )
                 return Response(BetSerializer(bet).data, status=status.HTTP_201_CREATED)
 

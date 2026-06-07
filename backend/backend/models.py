@@ -121,9 +121,6 @@ class Bet(models.Model):
     player = models.ForeignKey(Player, on_delete=models.CASCADE, related_name="bets")
     match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name="bets")
     outcome = models.CharField(max_length=1, choices=OUTCOME_CHOICES)
-    odds_at_bet = models.DecimalField(
-        max_digits=5, decimal_places=2
-    )  # TODO: no longer relevant?
     is_settled = models.BooleanField(default=False)
     payout = models.IntegerField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -140,7 +137,8 @@ def settle_match(match):
 
     Safe to call multiple times — reverses any previous settlement before
     recalculating, so admin corrections to scores are handled correctly.
-    Correct predictions earn round(odds_at_bet * 100) points; wrong ones earn nothing.
+    Correct predictions earn round(odds * 100) points, using the match's own
+    odds for the winning outcome (the same for every player); wrong ones earn nothing.
     """
     if match.home_score is None or match.away_score is None:
         return
@@ -151,6 +149,12 @@ def settle_match(match):
         winning_outcome = "D"
     else:
         winning_outcome = "A"
+
+    winning_odds = {
+        "H": match.odds_home,
+        "D": match.odds_draw,
+        "A": match.odds_away,
+    }[winning_outcome]
 
     bets = list(match.bets.select_related("player").all())
 
@@ -167,7 +171,7 @@ def settle_match(match):
     # Settle with the (possibly new) result.
     for bet in bets:
         if bet.outcome == winning_outcome:
-            bet.payout = round(float(bet.odds_at_bet) * 100)
+            bet.payout = round(float(winning_odds) * 100)
             bet.player.points_balance += bet.payout
         else:
             bet.payout = 0
