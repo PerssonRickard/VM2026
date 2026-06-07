@@ -15,22 +15,27 @@ function Flag({ code, name }) {
   );
 }
 
-function outcomeLabel(outcome) {
-  if (outcome === "H") return "Hemma";
-  if (outcome === "D") return "Oavgjort";
-  return "Borta";
-}
-
-function BetRow({ bet }) {
-  const won = bet.is_settled && bet.payout > 0;
-  const lost = bet.is_settled && bet.payout === 0;
+function OddsChip({ label, points, bets, showBets, correct }) {
   return (
-    <div className={`bet-row ${won ? "bet-row--won" : ""} ${lost ? "bet-row--lost" : ""}`}>
-      <span className="bet-player">{bet.player_username}</span>
-      <span className="bet-pick">{outcomeLabel(bet.outcome)}</span>
-      {won && <span className="bet-result bet-result--won">+{bet.payout} p</span>}
-      {lost && <span className="bet-result bet-result--lost">–</span>}
-      {!bet.is_settled && <span className="bet-result bet-result--pending">•</span>}
+    <div className={`odds-chip ${correct ? "odds-chip--correct" : ""}`}>
+      <span className="odds-label">{label}</span>
+      <span className="odds-points">{points} p</span>
+      {showBets && (
+      <div className="odds-bets">
+        {bets.map((bet) => {
+          const won = bet.is_settled && bet.payout > 0;
+          const lost = bet.is_settled && bet.payout === 0;
+          return (
+            <span
+              key={bet.id}
+              className={`odds-bet-player ${won ? "odds-bet-player--won" : ""} ${lost ? "odds-bet-player--lost" : ""}`}
+            >
+              {bet.player_username}
+            </span>
+          );
+        })}
+      </div>
+      )}
     </div>
   );
 }
@@ -52,6 +57,21 @@ export default function MatchCard({ match, innerRef, children }) {
     : match.betting_closed
     ? "match-card--locked"
     : "";
+
+  const betsByOutcome = { H: [], D: [], A: [] };
+  if (match.betting_closed && match.bets) {
+    for (const bet of match.bets) {
+      betsByOutcome[bet.outcome]?.push(bet);
+    }
+  }
+
+  const actualOutcome = hasResult
+    ? match.home_score > match.away_score
+      ? "H"
+      : match.home_score < match.away_score
+      ? "A"
+      : "D"
+    : null;
 
   return (
     <div className={`match-card ${statusClass}`} ref={innerRef}>
@@ -106,36 +126,18 @@ export default function MatchCard({ match, innerRef, children }) {
             <span className="odds-lock-badge">Odds låsta</span>
           )}
           {match.odds_home && (
-            <div className="odds-chip">
-              <span className="odds-label">1</span>
-              <span className="odds-points">{Math.round(parseFloat(match.odds_home) * 100)} p</span>
-            </div>
+            <OddsChip label="1" points={Math.round(parseFloat(match.odds_home) * 100)} bets={betsByOutcome.H} showBets={match.betting_closed} correct={actualOutcome === "H"} />
           )}
           {match.odds_draw && (
-            <div className="odds-chip">
-              <span className="odds-label">X</span>
-              <span className="odds-points">{Math.round(parseFloat(match.odds_draw) * 100)} p</span>
-            </div>
+            <OddsChip label="X" points={Math.round(parseFloat(match.odds_draw) * 100)} bets={betsByOutcome.D} showBets={match.betting_closed} correct={actualOutcome === "D"} />
           )}
           {match.odds_away && (
-            <div className="odds-chip">
-              <span className="odds-label">2</span>
-              <span className="odds-points">{Math.round(parseFloat(match.odds_away) * 100)} p</span>
-            </div>
+            <OddsChip label="2" points={Math.round(parseFloat(match.odds_away) * 100)} bets={betsByOutcome.A} showBets={match.betting_closed} correct={actualOutcome === "A"} />
           )}
         </div>
       )}
 
       <CountdownTimer kickoff={match.kickoff} />
-
-      {match.betting_closed && match.bets && match.bets.length > 0 && (
-        <div className="match-bets">
-          <div className="match-bets-title">Spel</div>
-          {match.bets.map((bet) => (
-            <BetRow key={bet.id} bet={bet} />
-          ))}
-        </div>
-      )}
 
       {children && (
         <div className="match-card-extra">{children}</div>

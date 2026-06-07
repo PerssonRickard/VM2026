@@ -161,7 +161,7 @@
   gap: 6px;
   margin-top: 14px;
   justify-content: center;
-  align-items: center;
+  align-items: stretch;
 }
 
 .odds-lock-badge {
@@ -185,6 +185,45 @@
   border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: 6px;
   padding: 9px 4px;
+  min-width: 0;
+}
+
+.odds-chip--correct {
+  background: rgba(76, 175, 125, 0.12);
+  border-color: rgba(76, 175, 125, 0.6);
+}
+
+.odds-chip--correct .odds-label {
+  color: #4caf7d;
+}
+
+.odds-bets {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  width: 100%;
+}
+
+.odds-bet-player {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #fff;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.odds-bet-player--won {
+  color: #4caf7d;
+}
+
+.odds-bet-player--lost {
+  color: #e25c5c;
 }
 
 .odds-label {
@@ -225,68 +264,3 @@
   border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* Bets section */
-.match-bets {
-  margin-top: 14px;
-  padding-top: 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.match-bets-title {
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: #444;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-bottom: 8px;
-}
-
-.bet-row {
-  display: grid;
-  grid-template-columns: 100px 1fr auto;
-  align-items: center;
-  gap: 8px;
-  padding: 5px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-  font-size: 0.8rem;
-}
-
-.bet-row:last-child {
-  border-bottom: none;
-}
-
-.bet-player {
-  font-weight: 600;
-  color: #888;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.bet-pick {
-  color: #666;
-}
-
-
-.bet-result {
-  font-weight: 700;
-  font-size: 0.8rem;
-  text-align: right;
-}
-
-.bet-result--won {
-  color: #4caf7d;
-}
-
-.bet-result--lost {
-  color: #555;
-}
-
-.bet-result--pending {
-  color: #444;
-  font-weight: 400;
-}
-
-.bet-row--won .bet-player {
-  color: #bbb;
-}
