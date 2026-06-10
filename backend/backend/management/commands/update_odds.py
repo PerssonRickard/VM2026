@@ -4,6 +4,7 @@ from django.utils import timezone
 
 from odds.odds_api import get_odds
 from backend.models import Match
+from backend.serializers import _odds_lock_time
 
 
 class Command(BaseCommand):
@@ -45,6 +46,13 @@ class Command(BaseCommand):
                         self.style.WARNING(
                             f"[{self._ts()}] Multiple unlocked matches for {home_name} vs {away_name} — skipping."
                         )
+                    )
+                    skipped += 1
+                    continue
+
+                if timezone.now() >= _odds_lock_time(match):
+                    self.stdout.write(
+                        f"[{self._ts()}] Odds locked for {home_name} vs {away_name} — skipping."
                     )
                     skipped += 1
                     continue

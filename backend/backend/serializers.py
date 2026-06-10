@@ -7,6 +7,18 @@ from rest_framework import serializers
 from backend.models import FORMATIONS, Bet, Highscore, Match, Player, SquadSlot, Team
 
 
+ODDS_LOCK_HOURS = 1
+
+
+def _odds_lock_time(match):
+    return match.kickoff - timedelta(hours=ODDS_LOCK_HOURS)
+
+
+def _is_betting_closed(match):
+    now = timezone.now()
+    return match.is_locked or now >= match.kickoff
+
+
 class HighscoreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Highscore
@@ -124,14 +136,12 @@ class BetCreateSerializer(serializers.Serializer):
     outcome = serializers.ChoiceField(choices=["H", "D", "A"])
 
     def validate(self, data):
-        now = timezone.now()
         try:
             match = Match.objects.get(pk=data["match_id"])
         except Match.DoesNotExist:
             raise serializers.ValidationError({"match_id": "Match not found."})
 
-        betting_closed = match.is_locked or now >= match.kickoff
-        if betting_closed:
+        if _is_betting_closed(match):
             raise serializers.ValidationError(
                 {"match_id": "Betting is closed for this match."}
             )
@@ -146,18 +156,6 @@ class BetCreateSerializer(serializers.Serializer):
         data["match"] = match
         data["player"] = self.context["request"].user.player
         return data
-
-
-ODDS_LOCK_HOURS = 24
-
-
-def _is_betting_closed(match):
-    now = timezone.now()
-    return match.is_locked or now >= match.kickoff
-
-
-def _odds_lock_time(match):
-    return match.kickoff - timedelta(hours=ODDS_LOCK_HOURS)
 
 
 class MatchSerializer(serializers.ModelSerializer):
