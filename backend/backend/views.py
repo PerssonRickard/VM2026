@@ -106,7 +106,7 @@ class BetListCreateView(APIView):
                 bet.outcome = data["outcome"]
                 bet.is_settled = False
                 bet.payout = None
-                bet.save(update_fields=["outcome", "is_settled", "payout"])
+                bet.save(update_fields=["outcome", "is_settled", "payout", "pick_updated_at"])
                 return Response(BetSerializer(bet).data, status=status.HTTP_200_OK)
             except Bet.DoesNotExist:
                 bet = Bet.objects.create(

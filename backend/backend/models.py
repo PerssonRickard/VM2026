@@ -124,6 +124,7 @@ class Bet(models.Model):
     is_settled = models.BooleanField(default=False)
     payout = models.IntegerField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    pick_updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         unique_together = [("player", "match")]
