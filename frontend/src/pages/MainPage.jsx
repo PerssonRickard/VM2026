@@ -85,10 +85,10 @@ export default function MainPage() {
     }
   }, [loading]);
 
-  const now = Date.now();
   let nextMatchId = null;
   for (const m of matches) {
-    if (new Date(m.kickoff) > now) {
+    const hasResult = m.home_score !== null && m.away_score !== null;
+    if (!hasResult) {
       nextMatchId = m.id;
       break;
     }
