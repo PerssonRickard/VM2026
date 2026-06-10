@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import api from "../api";
 import MatchCard from "../components/MatchCard";
 import PlayerLeaderboard from "../components/PlayerLeaderboard";
@@ -41,14 +41,38 @@ export default function MainPage() {
   const nextMatchRef = useRef(null);
   const scrolledRef = useRef(false);
 
-  useEffect(() => {
-    Promise.all([api.get("/matches/"), api.get("/players/")])
-      .then(([mRes, pRes]) => {
+  const load = useCallback(
+    () =>
+      Promise.all([api.get("/matches/"), api.get("/players/")]).then(([mRes, pRes]) => {
         setMatches(mRes.data);
         setPlayers(pRes.data);
-      })
-      .finally(() => setLoading(false));
-  }, []);
+      }),
+    []
+  );
+
+  useEffect(() => {
+    load().finally(() => setLoading(false));
+
+    const id = setInterval(load, 60000);
+    return () => clearInterval(id);
+  }, [load]);
+
+  // Refetch shortly after the next match's kickoff so bets become visible promptly.
+  useEffect(() => {
+    let nextKickoff = null;
+    for (const m of matches) {
+      if (m.betting_closed) continue;
+      const kickoff = new Date(m.kickoff).getTime();
+      if (nextKickoff === null || kickoff < nextKickoff) nextKickoff = kickoff;
+    }
+    if (nextKickoff === null) return;
+
+    const delay = nextKickoff - Date.now() + 1000;
+    if (delay <= 0 || delay > 24 * 60 * 60 * 1000) return;
+
+    const id = setTimeout(load, delay);
+    return () => clearTimeout(id);
+  }, [matches, load]);
 
   useEffect(() => {
     if (!loading && nextMatchRef.current && !scrolledRef.current) {
