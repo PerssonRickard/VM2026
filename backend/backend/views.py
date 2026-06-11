@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -51,7 +52,14 @@ class MatchListView(APIView):
     def get(self, request: Request) -> Response:
         matches = (
             Match.objects.select_related("home_team", "away_team")
-            .prefetch_related("bets__player__user")
+            .prefetch_related(
+                Prefetch(
+                    "bets",
+                    queryset=Bet.objects.select_related("player__user").order_by(
+                        "player__user__username"
+                    ),
+                )
+            )
             .order_by("kickoff")
         )
         serializer = MatchSerializer(matches, many=True)

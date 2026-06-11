@@ -201,6 +201,4 @@ class MatchSerializer(serializers.ModelSerializer):
     def get_bets(self, obj):
         if not _is_betting_closed(obj):
             return []
-        return PublicBetSerializer(
-            obj.bets.select_related("player__user"), many=True
-        ).data
+        return PublicBetSerializer(obj.bets.all(), many=True).data
