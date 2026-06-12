@@ -3,6 +3,8 @@ import { useAuth } from "../AuthContext";
 import "./PlayerLeaderboard.css";
 
 const MEDALS = ["🥇", "🥈", "🥉"];
+const PLACES = ["1:a plats", "2:a plats", "3:e plats"];
+const PRIZES = ["2 000 kr", "600 kr", "200 kr"];
 
 export default function PlayerLeaderboard({ players }) {
   const { user } = useAuth();
@@ -29,6 +31,17 @@ export default function PlayerLeaderboard({ players }) {
           })}
         </div>
       )}
+      <div className="leaderboard-prizes">
+        <h3 className="leaderboard-prizes-title">Vinster</h3>
+        <div className="leaderboard-prize-list">
+          {PLACES.map((place, idx) => (
+            <div key={place} className="leaderboard-prize-row">
+              <span className="leaderboard-prize-place">{place}</span>
+              <span className="leaderboard-prize-amount">{PRIZES[idx]}</span>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
