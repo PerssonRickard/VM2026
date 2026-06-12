@@ -3,6 +3,7 @@ from datetime import timedelta
 
 from django.core.management.base import BaseCommand
 from django.utils import timezone
+from django.utils.timesince import timeuntil
 
 from backend.models import Match, Player
 
@@ -11,10 +12,10 @@ def _team_name(team, label):
     return team.name if team else (label or "?")
 
 
-def _match_label(match):
+def _match_label(match, now):
     home = _team_name(match.home_team, match.home_label)
     away = _team_name(match.away_team, match.away_label)
-    return f"{home} vs {away} ({match.kickoff:%Y-%m-%d %H:%M} UTC)"
+    return f"{home} vs {away} ({match.kickoff:%Y-%m-%d %H:%M} UTC, in {timeuntil(match.kickoff, now)})"
 
 
 class Command(BaseCommand):
@@ -55,4 +56,4 @@ class Command(BaseCommand):
         for player, matches in sorted(missing.items(), key=lambda kv: kv[0].user.username):
             self.stdout.write(self.style.WARNING(f"{player.user.username}:"))
             for match in matches:
-                self.stdout.write(f"  - {_match_label(match)}")
+                self.stdout.write(f"  - {_match_label(match, now)}")
