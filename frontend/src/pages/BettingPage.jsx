@@ -84,7 +84,7 @@ function BetForm({ match, existingBet, onBetPlaced }) {
           <span className="bet-odds-note">
             {match.odds_locked
   ? "Odds låsta · dessa avgör vinsten"
-  : "Uppdateras löpande · låses 1h före avspark · låsta odds avgör vinsten"}
+  : "Uppdateras löpande · odds låses 1h före avspark · låsta odds avgör vinsten"}
           </span>
         )}
         {error && <span className="bet-error">{error}</span>}
