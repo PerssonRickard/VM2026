@@ -4,6 +4,7 @@ __pycache__/
 *.sqlite3
 staticfiles/
 *.log
+backend/match_data
 FotbollsVM2026_venv/
 venv/
 env/
