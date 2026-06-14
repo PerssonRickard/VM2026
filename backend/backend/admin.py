@@ -1,10 +1,14 @@
 import random
+from datetime import timedelta
 
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
+from django.utils import timezone
 
-from backend.models import Bet, Highscore, Match, Player, Team
+from backend.models import AnonymousVisit, Bet, Highscore, Match, Player, Team
+
+ONLINE_THRESHOLD = timedelta(minutes=2)
 
 
 @admin.register(Highscore)
@@ -70,10 +74,26 @@ admin.site.register(User, CustomUserAdmin)
 
 @admin.register(Player)
 class PlayerAdmin(admin.ModelAdmin):
-    list_display = ("user", "points_balance", "can_edit_squads")
+    list_display = ("user", "points_balance", "can_edit_squads", "is_online", "last_seen")
     list_editable = ("can_edit_squads",)
     search_fields = ("user__username",)
-    ordering = ("-points_balance",)
+    ordering = ("-last_seen",)
+
+    @admin.display(description="Online", boolean=True)
+    def is_online(self, obj):
+        if not obj.last_seen:
+            return False
+        return timezone.now() - obj.last_seen <= ONLINE_THRESHOLD
+
+
+@admin.register(AnonymousVisit)
+class AnonymousVisitAdmin(admin.ModelAdmin):
+    list_display = ("ip_address", "is_online", "last_seen")
+    ordering = ("-last_seen",)
+
+    @admin.display(description="Online", boolean=True)
+    def is_online(self, obj):
+        return timezone.now() - obj.last_seen <= ONLINE_THRESHOLD
 
 
 @admin.register(Bet)

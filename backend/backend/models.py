@@ -110,9 +110,24 @@ class Player(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="player")
     points_balance = models.IntegerField(default=0)
     can_edit_squads = models.BooleanField(default=False)
+    last_seen = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return self.user.username
+
+
+class AnonymousVisit(models.Model):
+    """Tracks not-logged-in visitors, fingerprinted by IP + user agent."""
+
+    visitor_key = models.CharField(max_length=64, unique=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    last_seen = models.DateTimeField()
+
+    class Meta:
+        ordering = ["-last_seen"]
+
+    def __str__(self):
+        return f"{self.ip_address or 'unknown'} — {self.last_seen:%Y-%m-%d %H:%M}"
 
 
 class Bet(models.Model):
