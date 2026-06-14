@@ -46,12 +46,17 @@ class Command(BaseCommand):
         remaining = {match.id: match for match in matches}
         deadline = timezone.now() + MAX_POLL_DURATION
 
-        while remaining:
+        while True:
             now = timezone.now()
-            for match_id, match in list(remaining.items()):
-                if match.kickoff + POLL_AFTER_KICKOFF > now:
-                    continue
+            due = {
+                match_id: match
+                for match_id, match in remaining.items()
+                if match.kickoff + POLL_AFTER_KICKOFF <= now
+            }
+            if not due:
+                break
 
+            for match_id, match in due.items():
                 self.stdout.write(f"[{self._ts()}] Polling result for {match}...")
                 try:
                     result = get_match_data(match.home_team.name, match.away_team.name, match.kickoff)
@@ -79,12 +84,13 @@ class Command(BaseCommand):
                 )
                 del remaining[match_id]
 
-            if not remaining:
-                break
+            still_due = [match for match_id, match in due.items() if match_id in remaining]
+            if not still_due:
+                continue
 
             if timezone.now() + POLL_INTERVAL > deadline:
                 self.stdout.write(
-                    self.style.WARNING(f"[{self._ts()}] Giving up for now, still pending: {list(remaining.values())}")
+                    self.style.WARNING(f"[{self._ts()}] Giving up for now, still pending: {still_due}")
                 )
                 break
 
