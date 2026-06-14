@@ -8,7 +8,7 @@ from django.utils import timezone
 from match_data.match_api import get_match_data
 from backend.models import Match
 
-POLL_AFTER_KICKOFF = timedelta(minutes=90)
+POLL_AFTER_KICKOFF = timedelta(minutes=100)
 POLL_INTERVAL = timedelta(seconds=30)
 MAX_POLL_DURATION = timedelta(hours=3)
 LOCK_FILE_PATH = "/tmp/poll_match_results.lock"
@@ -25,7 +25,7 @@ class Command(BaseCommand):
 
         now = timezone.now()
         if not any(match.kickoff + POLL_AFTER_KICKOFF <= now for match in unfinished):
-            self.stdout.write(f"[{self._ts()}] No unfinished matches past kickoff + 90 minutes.")
+            self.stdout.write(f"[{self._ts()}] No unfinished matches past kickoff + 100 minutes.")
             return
 
         lock_file = open(LOCK_FILE_PATH, "w")
