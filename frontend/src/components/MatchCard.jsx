@@ -22,7 +22,7 @@ function OddsChip({ label, points, bets, showBets, correct }) {
       <span className="odds-points">{points} p</span>
       {showBets && (
       <div className="odds-bets">
-        {bets.map((bet) => {
+        {bets.map((bet, i) => {
           const won = bet.is_settled && bet.payout > 0;
           const lost = bet.is_settled && bet.payout === 0;
           return (
@@ -30,7 +30,7 @@ function OddsChip({ label, points, bets, showBets, correct }) {
               key={bet.id}
               className={`odds-bet-player ${won ? "odds-bet-player--won" : ""} ${lost ? "odds-bet-player--lost" : ""}`}
             >
-              {bet.player_username}
+              {bet.player_username}{i < bets.length - 1 ? "," : ""}
             </span>
           );
         })}
